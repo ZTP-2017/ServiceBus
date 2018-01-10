@@ -3,5 +3,6 @@
     public interface ISender
     {
         void SendEmails();
+        void SetSkipValue(int value);
     }
 }

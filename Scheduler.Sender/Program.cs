@@ -30,6 +30,7 @@ namespace Scheduler.Sender
             builder.RegisterType<Scheduler>();
             
             builder.RegisterModule<DataModule>();
+            builder.RegisterType<Sender>();
             builder.RegisterType<Sender>().As<ISender>();
 
             Container = builder.Build();
@@ -59,8 +60,7 @@ namespace Scheduler.Sender
                     service.WhenStarted(s => s.Start());
                     service.WhenStopped(s => s.Stop());
                 });
-
-                configure.RunAsLocalService();
+                
                 configure.SetServiceName("MailerService");
                 configure.SetDisplayName("Mailer Service");
                 configure.SetDescription("Mailer service ZTP");

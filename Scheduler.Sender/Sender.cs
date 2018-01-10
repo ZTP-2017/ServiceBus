@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Timers;
 using MassTransit;
 using Scheduler.Data.Interfaces;
 using Scheduler.Messaging;
@@ -14,7 +12,7 @@ namespace Scheduler.Sender
 {
     public class Sender : ISender
     {
-        private Timer _timer;
+        private static int skipMessagesCount;
         private List<Message> _messages;
         private readonly IBusControl _bus;
         private bool _endSending;
@@ -41,43 +39,22 @@ namespace Scheduler.Sender
             try
             {
                 Log.Information("Get data from file");
-
                 var messages = GetMessages();
-
-                if (messages.Count == 0)
-                {
-                    Log.Information("All messages send");
-                    _endSending = true;
-
-                    return;
-                }
 
                 _bus.Start();
 
-                var stopWatch = new Stopwatch();
-                stopWatch.Start();
-
-                foreach (var message in messages)
+                messages.ForEach(async x =>
                 {
-                    var guid = Guid.NewGuid();
-
                     await _bus.Publish<IMessage>(new
                     {
-                        Email = message.Email,
-                        Subject = message.Subject,
-                        Body = message.Body
+                        Email = x.Email,
+                        Subject = x.Subject,
+                        Body = x.Body
                     });
-
-                    Console.WriteLine($"Order {guid} sent");
-                }
+                    Log.Information($"Message {x.Subject} to {x.Email} was sent");
+                });
 
                 _bus.Stop();
-                stopWatch.Stop();
-
-                _timer = new Timer(60000 - stopWatch.Elapsed.Milliseconds);
-                _timer.Elapsed += Timer_Elapsed;
-                _timer.AutoReset = true;
-                _timer.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -85,23 +62,18 @@ namespace Scheduler.Sender
             }
         }
 
-        private List<Message> GetMessages()
+        public void SetSkipValue(int value)
         {
-            var messages = _messages.Count() > 100 ?
-                _messages.Take(100).ToList() :
-                _messages;
-
-            _messages = _messages.Where(x => messages.All(y => x != y)).ToList();
-
-            return messages;
+            skipMessagesCount = value;
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private List<Message> GetMessages()
         {
-            if (!_endSending)
-            {
-                SendEmails();
-            }
+            var messages = _messages.Skip(skipMessagesCount).Take(100).ToList();
+
+            skipMessagesCount += messages.Count;
+
+            return messages;
         }
     }
 }
