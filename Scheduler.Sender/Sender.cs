@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MassTransit;
 using Scheduler.Data.Interfaces;
 using Scheduler.Messaging;
@@ -12,40 +13,33 @@ namespace Scheduler.Sender
 {
     public class Sender : ISender
     {
-        private static int skipMessagesCount;
-        private List<Message> _messages;
+        private static int _skipMessagesCount;
+        private static List<Message> _messages;
+
         private readonly IBusControl _bus;
-        private bool _endSending;
+        private readonly IDataService _dataService;
 
         public Sender(IDataService dataService)
         {
-            _endSending = false;
-            _messages = dataService.GetAllMessages<Message>(Settings.DataFilePath);
-
-            _bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
-            {
-                cfg.PublisherConfirmation = false;
-
-                var host = cfg.Host(new Uri("rabbitmq://localhost/"), hostCfg =>
-                {
-                    hostCfg.Username("guest");
-                    hostCfg.Password("guest");
-                });
-            });
+            _bus = GetBus();
+            _dataService = dataService;
         }
 
-        public async void SendEmails()
+        public void LoadAllMessagesFromFile(string path)
+        {
+            _messages = _dataService.GetAllMessages<Message>(path);
+        }
+
+        public void SendEmails()
         {
             try
             {
                 Log.Information("Get data from file");
-                var messages = GetMessages();
-
-                _bus.Start();
+                var messages = GetMessages(100);
 
                 messages.ForEach(async x =>
                 {
-                    await _bus.Publish<IMessage>(new
+                    await _bus.Publish<IMessage>(new Message
                     {
                         Email = x.Email,
                         Subject = x.Subject,
@@ -54,7 +48,15 @@ namespace Scheduler.Sender
                     Log.Information($"Message {x.Subject} to {x.Email} was sent");
                 });
 
+                _bus.Start();
+
+                Console.WriteLine("Bus started");
+
+                Console.ReadLine();
+
                 _bus.Stop();
+
+                Console.WriteLine("Bus stoped");
             }
             catch (Exception ex)
             {
@@ -64,16 +66,30 @@ namespace Scheduler.Sender
 
         public void SetSkipValue(int value)
         {
-            skipMessagesCount = value;
+            _skipMessagesCount = value;
         }
 
-        private List<Message> GetMessages()
+        private List<Message> GetMessages(int count)
         {
-            var messages = _messages.Skip(skipMessagesCount).Take(100).ToList();
+            var messages = _messages.Skip(_skipMessagesCount).Take(count).ToList();
 
-            skipMessagesCount += messages.Count;
+            _skipMessagesCount += messages.Count;
 
             return messages;
+        }
+
+        private IBusControl GetBus()
+        {
+            return Bus.Factory.CreateUsingRabbitMq(cfg =>
+            {
+                cfg.PublisherConfirmation = false;
+
+                var host = cfg.Host(new Uri("rabbitmq://localhost/"), hostCfg =>
+                {
+                    hostCfg.Username("guest");
+                    hostCfg.Password("guest");
+                });
+            });
         }
     }
 }

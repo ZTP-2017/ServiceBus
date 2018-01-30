@@ -2,6 +2,7 @@
 {
     public class Settings
     {
-        public const string DataFilePath = "Data/data.csv";
+        public string DataFilePath { get; set; }
+        public string HostingUrl { get; set; }
     }
 }

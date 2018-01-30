@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using Autofac;
 using Hangfire;
 using Scheduler.Data;
@@ -46,6 +47,7 @@ namespace Scheduler.Sender
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.LiterateConsole()
                 .WriteTo.RollingFile("Logs/log-{Date}.txt")
+                .WriteTo.ColoredConsole()
                 .CreateLogger();
         }
 
@@ -57,7 +59,7 @@ namespace Scheduler.Sender
                 configure.Service<Scheduler>(service =>
                 {
                     service.ConstructUsingAutofacContainer();
-                    service.WhenStarted(s => s.Start());
+                    service.WhenStarted(s => s.Start(GetAppSettings()));
                     service.WhenStopped(s => s.Stop());
                 });
                 
@@ -66,6 +68,15 @@ namespace Scheduler.Sender
                 configure.SetDescription("Mailer service ZTP");
                 configure.RunAsLocalService();
             });
+        }
+
+        private static Settings GetAppSettings()
+        {
+            return new Settings
+            {
+                HostingUrl = ConfigurationManager.AppSettings["hostingUrl"],
+                DataFilePath = ConfigurationManager.AppSettings["messagesFilePath"]
+            };
         }
     }
 }
