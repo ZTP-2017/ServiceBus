@@ -116,6 +116,10 @@
       <Project>{7f53ffa3-4f01-494c-bb87-c90e5a2b9486}</Project>
       <Name>Scheduler.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Scheduler.Logger\Scheduler.Logger.csproj">
+      <Project>{748c7cc6-e6bb-4331-9b73-bea134b2c211}</Project>
+      <Name>Scheduler.Logger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Scheduler.Messaging\Scheduler.Messaging.csproj">
       <Project>{140c994c-e937-484f-a4ec-89b2e1de36e2}</Project>
       <Name>Scheduler.Messaging</Name>

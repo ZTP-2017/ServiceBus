@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.0
+VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduler.Sender", "Scheduler.Sender\Scheduler.Sender.csproj", "{E962E99C-7F88-4048-B472-C6873BD20148}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduler.Receiver", "Scheduler.Receiver\Scheduler.Receiver.csproj", "{1D203851-7D5D-4886-851E-F70809CACB40}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduler.Data", "Scheduler.Data\Scheduler.Data.csproj", "{7F53FFA3-4F01-494C-BB87-C90E5A2B9486}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduler.Logger", "Scheduler.Logger\Scheduler.Logger.csproj", "{748C7CC6-E6BB-4331-9B73-BEA134B2C211}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{7F53FFA3-4F01-494C-BB87-C90E5A2B9486}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F53FFA3-4F01-494C-BB87-C90E5A2B9486}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F53FFA3-4F01-494C-BB87-C90E5A2B9486}.Release|Any CPU.Build.0 = Release|Any CPU
+		{748C7CC6-E6BB-4331-9B73-BEA134B2C211}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{748C7CC6-E6BB-4331-9B73-BEA134B2C211}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{748C7CC6-E6BB-4331-9B73-BEA134B2C211}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{748C7CC6-E6BB-4331-9B73-BEA134B2C211}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
