@@ -1,6 +1,7 @@
 ﻿using System;
 using FluentMailer.Factory;
 using MassTransit;
+using Scheduler.Logger;
 using Scheduler.Messaging;
 using Scheduler.Receiver.Interfaces;
 using Serilog;
@@ -10,11 +11,14 @@ namespace Scheduler.Receiver
     class Program
     {
         private static IMailService _mailService;
+        private static ILoggerService _loggerService;
 
         static void Main(string[] args)
         {
+            _loggerService = new LoggerService();
+
             var fluentMailer = FluentMailerFactory.Create();
-            _mailService = new MailService(fluentMailer);
+            _mailService = new MailService(fluentMailer, _loggerService);
 
             var logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
@@ -39,13 +43,13 @@ namespace Scheduler.Receiver
 
             bus.Start();
 
-            Console.WriteLine("Bus started");
+            _loggerService.CreateLog(LoggerService.LogType.Info, "Service bus started", null);
 
             Console.ReadLine();
 
             bus.Stop();
 
-            Console.WriteLine("Bus stoped");
+            _loggerService.CreateLog(LoggerService.LogType.Info, "Service bus stopped", null);
         }
     }
 }

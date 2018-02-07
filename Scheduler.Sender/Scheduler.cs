@@ -1,41 +1,45 @@
 ﻿using System;
 using Hangfire;
 using Microsoft.Owin.Hosting;
+using Scheduler.Logger;
 using Scheduler.Sender.Interfaces;
-using Serilog;
 
 namespace Scheduler.Sender
 {
     public class Scheduler
     {
         private readonly ISender _sender;
+        private readonly ILoggerService _loggerService;
+        private readonly Settings _settings;
 
-        public Scheduler(ISender sender)
+        public Scheduler(ISender sender, ILoggerService loggerService, Settings settings)
         {
             _sender = sender;
+            _settings = settings;
+            _loggerService = loggerService;
         }
 
         private IDisposable _webApp;
 
-        public void Start(Settings settings)
+        public void Start()
         {
             try
             {
-                _webApp = WebApp.Start<Startup>(settings.HostingUrl);
+                _webApp = WebApp.Start<Startup>(_settings.HostingUrl);
 
                 _sender.SetSkipValue(0);
-                _sender.LoadAllMessagesFromFile(settings.DataFilePath);
+                _sender.LoadAllMessagesFromFile(_settings.DataFilePath);
 
                 RecurringJob.AddOrUpdate(
                     () => _sender.SendEmails(),
                     Cron.Minutely
                 );
 
-                Log.Information("Start service");
+                _loggerService.CreateLog(LoggerService.LogType.Info, "Start service", null);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Start service error: ");
+                _loggerService.CreateLog(LoggerService.LogType.Error, "Start service error", ex);
             }
         }
 
@@ -44,11 +48,11 @@ namespace Scheduler.Sender
             try
             {
                 _webApp.Dispose();
-                Log.Information("Stop service");
+                _loggerService.CreateLog(LoggerService.LogType.Info, "Stop service", null);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Stop service error: ");
+                _loggerService.CreateLog(LoggerService.LogType.Error, "Stop service error", ex);
             }
         }
     }

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MassTransit;
 using Scheduler.Data.Interfaces;
+using Scheduler.Logger;
 using Scheduler.Messaging;
 using Scheduler.Sender.Interfaces;
 using Scheduler.Sender.Models;
-using Serilog;
 
 namespace Scheduler.Sender
 {
@@ -18,11 +17,13 @@ namespace Scheduler.Sender
 
         private readonly IBusControl _bus;
         private readonly IDataService _dataService;
+        private readonly ILoggerService _loggerService;
 
-        public Sender(IDataService dataService)
+        public Sender(IDataService dataService, ILoggerService loggerService)
         {
             _bus = GetBus();
             _dataService = dataService;
+            _loggerService = loggerService;
         }
 
         public void LoadAllMessagesFromFile(string path)
@@ -34,7 +35,7 @@ namespace Scheduler.Sender
         {
             try
             {
-                Log.Information("Get data from file");
+                _loggerService.CreateLog(LoggerService.LogType.Info, "Get data from file", null);
                 var messages = GetMessages(100);
 
                 messages.ForEach(async x =>
@@ -45,22 +46,22 @@ namespace Scheduler.Sender
                         Subject = x.Subject,
                         Body = x.Body
                     });
-                    Log.Information($"Message {x.Subject} to {x.Email} was sent");
                 });
 
                 _bus.Start();
 
-                Console.WriteLine("Bus started");
+                _loggerService.CreateLog(LoggerService.LogType.Info, "Service bus started", null);
 
                 Console.ReadLine();
 
                 _bus.Stop();
 
+                _loggerService.CreateLog(LoggerService.LogType.Info, "Service bus stopped", null);
                 Console.WriteLine("Bus stoped");
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Messages send error: ");
+                _loggerService.CreateLog(LoggerService.LogType.Error, "Messages send error", ex);
             }
         }
 
